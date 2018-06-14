@@ -41,22 +41,22 @@ import java.util.Random;
 /**
  * Created by MakhrovSS on 24.03.2017.
  */
-public class ObjectsClassification1 {
-    protected static final Logger log = LoggerFactory.getLogger(ObjectsClassification1.class);
+public class FaceClassification {
+    protected static final Logger log = LoggerFactory.getLogger(FaceClassification.class);
     protected static int height = 64;
     protected static int width = 64;
     protected static int channels = 3;
-    protected static int numLabels = 7;
+    protected static int numLabels = 2;
     protected static int batchSize = 20;
 
     protected static long seed = 42;
     protected static Random rng = new Random(seed);
     protected static int listenerFreq = 1;
     protected static int iterations = 1;
-    protected static int epochs = 50;
+    protected static int epochs = 40;
     protected static double splitTrainTest = 0.8;
-    protected static int nCores = 8;
-    protected static boolean save = false;
+    protected static int nCores = 2;
+    protected static boolean save = true;
 
     public void run(String[] args) throws Exception {
 
@@ -68,7 +68,7 @@ public class ObjectsClassification1 {
          *  - pathFilter = define additional file load filter to limit size and balance batch content
          **/
         ParentPathLabelGenerator labelMaker = new ParentPathLabelGenerator();
-        File mainPath = new File(System.getProperty("user.dir"), "dl4j-examples/src/main/resources/tiny/");
+        File mainPath = new File(System.getProperty("user.dir"), "src\\main\\resources\\facesSA\\");
         FileSplit fileSplit = new FileSplit(mainPath, NativeImageLoader.ALLOWED_FORMATS, rng);
         RandomPathFilter pathFilter = new RandomPathFilter(rng, NativeImageLoader.ALLOWED_FORMATS, 0);
 
@@ -98,7 +98,7 @@ public class ObjectsClassification1 {
 
         log.info("Build model....");
 
-        MultiLayerNetwork network= alexnetModel();
+        MultiLayerNetwork network = lenetModel();
         network.init();
         network.setListeners(new ScoreIterationListener(listenerFreq));
 
@@ -147,6 +147,8 @@ public class ObjectsClassification1 {
         log.info(eval.stats(true));
 
         // Example on how to get predict results with trained model
+
+
         dataIter.reset();
         DataSet testDataSet = dataIter.next();
         String expectedResult = testDataSet.getLabelName(0);
@@ -156,8 +158,8 @@ public class ObjectsClassification1 {
 
         if (save) {
             log.info("Save model....");
-            String basePath = FilenameUtils.concat(System.getProperty("user.dir"), "src/main/resources/");
-            ModelSerializer.writeModel(network, basePath + "model.bin", true);
+            String basePath = FilenameUtils.concat(System.getProperty("user.dir"), "src\\main\\resources\\models\\");
+            ModelSerializer.writeModel(network, basePath, false);
         }
         log.info("****************Example finished********************");
     }
@@ -245,9 +247,9 @@ public class ObjectsClassification1 {
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
             .seed(seed)
             .iterations(iterations)
-            .regularization(false).l2(0.005) // tried 0.0001, 0.0005
+            .regularization(false).l2(0.0005) // tried 0.0001, 0.0005
             .activation(Activation.RELU)
-            .learningRate(0.0001) // tried 0.00001, 0.00005, 0.000001
+            .learningRate(0.0009) // tried 0.00001, 0.00005, 0.000001
             .weightInit(WeightInit.XAVIER)
             .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
             .updater(Updater.RMSPROP).momentum(0.9)
@@ -270,7 +272,7 @@ public class ObjectsClassification1 {
     }
 
     public static void main(String[] args) throws Exception {
-        new ObjectsClassification1().run(args);
+        new FaceClassification().run(args);
     }
 
 }
